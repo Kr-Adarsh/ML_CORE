@@ -1,0 +1,4 @@
+langchain
+langchain-splitters
+pydantic
+pandas
