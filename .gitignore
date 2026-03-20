@@ -1,5 +1,6 @@
+*.csv
+*.npy
+*.npz
+*.html
 .venv/
-__pycache__/
 .env
-.csv
-.pkl
