@@ -4,17 +4,18 @@ import requests
 from datetime import datetime, timezone
 
 OWNER = os.environ["TRAFFIC_OWNER"]
-REPO = os.environ["REPO"]
+REPO = os.environ["TRAFFIC_REPO"]
 TOKEN = os.environ["TRAFFIC_TOKEN"]
 
-BASE = "https://api.github.com/repos/{owner}/{repo}/traffic"
+BASE = f"https://api.github.com/repos/{OWNER}/{REPO}/traffic"
+
 HEADERS = {
     "Accept": "application/vnd.github+json",
     "Authorization": f"Bearer {TOKEN}",
 }
 
 def fetch(endpoint):
-    url = f"https://api.github.com/repos/{OWNER}/{REPO}/traffic{endpoint}"
+    url = BASE + endpoint
     r = requests.get(url, headers=HEADERS)
     
     print("STATUS:", r.status_code)
