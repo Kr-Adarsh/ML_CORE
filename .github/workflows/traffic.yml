@@ -32,12 +32,16 @@ jobs:
 
       - name: Commit log
         run: |
+          mkdir -p /tmp/traffic_backup
+          cp -r traffic /tmp/traffic_backup
           git fetch origin analytics
-          git checkout analytics || git checkout -b analytics
-
+          git checkout -B analytics origin/analytics
+          mkdir -p traffic
+          cp -r /tmp/traffic_backup/* traffic/
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add traffic/traffic_log.csv
           git commit -m "Update traffic log" || exit 0
+
           git push origin analytics
