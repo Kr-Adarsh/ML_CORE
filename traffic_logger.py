@@ -4,7 +4,7 @@ import requests
 from datetime import datetime, timezone
 
 OWNER = os.environ["TRAFFIC_OWNER"]
-REPO = os.environ["TRAFFIC_REPO"]
+REPO = os.environ["REPO"]
 TOKEN = os.environ["TRAFFIC_TOKEN"]
 
 BASE = "https://api.github.com/repos/{owner}/{repo}/traffic"
