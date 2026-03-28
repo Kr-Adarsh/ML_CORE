@@ -4,3 +4,5 @@
 *.html
 .venv/
 .env
+
+!traffic/traffic_log.csv
