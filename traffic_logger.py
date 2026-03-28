@@ -13,9 +13,13 @@ HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
 }
 
-def fetch(endpoint: str):
-    url = BASE.format(owner=OWNER, repo=REPO) + endpoint
-    r = requests.get(url, headers=HEADERS, timeout=30)
+def fetch(endpoint):
+    url = f"https://api.github.com/repos/{OWNER}/{REPO}/traffic{endpoint}"
+    r = requests.get(url, headers=HEADERS)
+    
+    print("STATUS:", r.status_code)
+    print("RESPONSE:", r.text)
+
     r.raise_for_status()
     return r.json()
 
