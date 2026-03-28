@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: analytics
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -31,8 +34,10 @@ jobs:
 
       - name: Commit log
         run: |
+          git checkout analytics
+          git branch --show-current
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add traffic/traffic_log.csv
           git commit -m "Update traffic log" || exit 0
-          git push
+          git push origin analytics
