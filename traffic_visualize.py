@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pathlib import Path
 
-csv_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("traffic_log2.csv")
+csv_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("traffic_log.csv") #correctly add the traffic_log.csv's path
 if not csv_path.exists():
     print(f"[!] File not found: {csv_path}")
     print("    Usage: python traffic_viz.py path/to/traffic_log.csv")

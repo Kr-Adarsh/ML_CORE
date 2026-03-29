@@ -6,3 +6,4 @@
 .env
 
 !traffic/traffic_log.csv
+"projs/Comments Category Prediction/"
