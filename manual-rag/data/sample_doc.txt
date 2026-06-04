@@ -1,0 +1,7 @@
+Machine learning is a field of artificial intelligence that allows systems to learn from data.
+
+Supervised learning uses labeled examples. The model learns a mapping from inputs to outputs.
+
+Unsupervised learning works with unlabeled data and tries to find patterns or structure.
+
+A vector database stores embeddings and helps search for semantically similar content.
