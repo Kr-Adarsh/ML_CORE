@@ -1,6 +1,5 @@
 # Under the Hood: Chunking & Vector Embeddings
 
----
 
 ## Step by Step
 
@@ -12,9 +11,9 @@ eg: `"from data"` → `[2, 2013, 2951, 1012, 3]` ~ *[CLS, from, data, ., SEP]*
 
 ### 2. Embedding Lookup
 
-Each token ID is mapped to a 384-dimensional vector from the embedding layer. The model doesn't use a slow Python for loop or a dictionary key lookup — under the hood, it does this instantly using high-speed matrix indexing or hardware-accelerated matrix multiplication.
+Each token ID is mapped to a 384-dimensional vector from the embedding layer. The model doesn't use a slow Python for loop or a dictionary key lookup: under the hood, it does this instantly using high-speed matrix indexing or hardware-accelerated matrix multiplication.
 
-So it looks like this — it looks up each row index from the massive weight matrix $E_{\text{vocab}}$:
+So it looks like this: it looks up each row index from the massive weight matrix $E_{\text{vocab}}$:
 
 $$\begin{aligned}
 \text{Row 2 } ([CLS]) &\rightarrow [0.012, -0.054, \dots, 0.089] \\
@@ -41,37 +40,70 @@ The model keeps a second, separate dictionary called the Positional Embedding Ma
 
 Finally, the model adds the token embeddings and positional encodings together to create the final input matrix:
 
-$$X_{\text{input}} = X_{\text{token}} + P$$
+$$X_{\text{input}} = X_{\text{token}} + P $$
 
 Visually, the element-by-element addition looks like this:
 
-$$
-\begin{bmatrix}
-    \longleftarrow \text{Final '[CLS]'} \longrightarrow \\
-    \longleftarrow \text{Final 'from'} \longrightarrow \\
-    \longleftarrow \text{Final 'data'} \longrightarrow \\
-    \longleftarrow \text{Final '.'} \longrightarrow \\
-    \longleftarrow \text{Final '[SEP]'} \longrightarrow
-\end{bmatrix}_{(5 \times 384)}
-=
-\begin{bmatrix}
-    \longleftarrow \text{Vector for '[CLS]'} \longrightarrow \\
-    \longleftarrow \text{Vector for 'from'} \longrightarrow \\
-    \longleftarrow \text{Vector for 'data'} \longrightarrow \\
-    \longleftarrow \text{Vector for '.'} \longrightarrow \\
-    \longleftarrow \text{Vector for '[SEP]'} \longrightarrow
-\end{bmatrix}_{(5 \times 384)}
-+
-\begin{bmatrix}
-    \longleftarrow \text{Vector for Position 0} \longrightarrow \\
-    \longleftarrow \text{" Position 1} \longrightarrow \\
-    \longleftarrow \text{" Position 2} \longrightarrow \\
-    \longleftarrow \text{" Position 3} \longrightarrow \\
-    \longleftarrow \text{" Position 4} \longrightarrow
-\end{bmatrix}_{(5 \times 384)}
-$$
+<table>
+<tr>
+  <td align="center">
 
----
+$$X_{\text{input}}$$
+
+  </td>
+  <td align="center">=</td>
+  <td align="center">
+
+$$X_{\text{token}}$$
+
+  </td>
+  <td align="center">+</td>
+  <td align="center">
+
+$$P$$
+
+  </td>
+</tr>
+<tr>
+<td>
+
+| $X_{\text{input}}$ $(5 \times 384)$ |
+|---|
+| ← Final [CLS] → |
+| ← Final from → |
+| ← Final data → |
+| ← Final . → |
+| ← Final [SEP] → |
+
+</td>
+<td>=</td>
+<td>
+
+| $X_{\text{token}}$ $(5 \times 384)$ |
+|---|
+| ← Vector for [CLS] → |
+| ← Vector for from → |
+| ← Vector for data → |
+| ← Vector for . → |
+| ← Vector for [SEP] → |
+
+</td>
+<td>+</td>
+<td>
+
+| $P$ $(5 \times 384)$ |
+|---|
+| ← Position 0 → |
+| ← Position 1 → |
+| ← Position 2 → |
+| ← Position 3 → |
+| ← Position 4 → |
+
+</td>
+</tr>
+</table>
+
+- - -
 
 ### 4. Self-Attention (semantic understanding)
 
@@ -79,7 +111,7 @@ $$
 
 To figure out how words relate to each other, the transformer uses a system inspired by database retrieval: Queries, Keys, and Values. Inside this layer, the model has three distinct, trainable weight matrices: $W_Q$, $W_K$, and $W_V$. Because the embedding dimension is $384$, each of these projection matrices has a shape of $(384, 384)$.
 
-#### 4.1 — Projecting into Query, Key, and Value Spaces
+#### 4.1: Projecting into Query, Key, and Value Spaces
 
 The model multiplies the input matrix $X_{\text{input}}$ by each of these weight matrices to split it into three separate spaces:
 
@@ -93,7 +125,7 @@ Each of these resulting matrices has the same shape as the input: $(5, 384)$. Th
 - $K$: How each token is offering information about itself.
 - $V$: The actual information content of each token.
 
-**Example — walking through it step by step:**
+**Example: walking through it step by step:**
 
 **Phase 1: The Linear Vector Projection** *(where $Q$, $K$, $V$ are born)*
 
@@ -114,7 +146,7 @@ Both $q_{\text{data}}$ and $k_{\text{from}}$ are now unique vectors of size $384
 
 **Phase 2: The Raw Compatibility Score** *(dot product)*
 
-To find out how contextually relevant "from" is to "data", the model calculates the dot product of these two vectors — it multiplies them element-by-element and sums up the total:
+To find out how contextually relevant "from" is to "data", the model calculates the dot product of these two vectors: it multiplies them element-by-element and sums up the total:
 
 $$\text{Raw Score}_{(\text{data} \rightarrow \text{from})} = (q_1 \times k_1) + (q_2 \times k_2) + \dots + (q_{384} \times k_{384})$$
 
@@ -144,7 +176,7 @@ $$\text{Scaled Score} = \frac{\text{Raw Score}}{19.6}$$
 
 **Then softmaxing:**
 
-These scaled scores $(0.52, 0.74, 0.70$, etc.) don't represent percentages — they don't add up to $1.0$. To turn them into clean attention weights, the model passes the row through the Softmax equation:
+These scaled scores $(0.52, 0.74, 0.70$, etc.) don't represent percentages: they don't add up to $1.0$. To turn them into clean attention weights, the model passes the row through the Softmax equation:
 
 $$\text{Weight} = \frac{e^{\text{Scaled Score}}}{\sum e^{\text{All Scaled Scores}}}$$
 
@@ -170,7 +202,7 @@ Now, we divide each individual exponent by the total sum ($8.57$) to get the fin
 
 ---
 
-#### 4.2 — Calculating Attention Scores
+#### 4.2: Calculating Attention Scores
 
 To see how much attention the word "data" should pay to "from", the model calculates the dot product between the Query vector of "data" and the Key vector of "from". To do this for all words simultaneously, it multiplies the entire Query matrix $Q$ by the transposed Key matrix $K^T$:
 
@@ -184,7 +216,7 @@ $$\text{shape}(5, 384) \times \text{shape}(384, 5) = \text{shape}(5, 5)$$
 
 ---
 
-#### 4.3 — Scaling and Normalizing
+#### 4.3: Scaling and Normalizing (As we did earlier)
 
 To prevent the raw scores from becoming too large (which can cause issues with gradients), the model scales them by dividing by the square root of the key dimension ($\sqrt{d_k} = \sqrt{384} \approx 19.6$). "Too large" means numbers that lead to very small gradients during backpropagation, making training unstable.
 
@@ -206,7 +238,7 @@ data  & 0.15 & 0.45 & 0.35 & 0.02 & 0.03 \\
 
 ---
 
-#### 4.4 — The Contextual Blend (Multiplying by Values)
+#### 4.4: The Contextual Blend (Multiplying by Values)
 
 Now that the model knows the exact percentage weights, it uses them to blend the Value matrix ($V$). It multiplies the $(5, 5)$ attention weights by the $(5, 384)$ Value matrix:
 
@@ -217,7 +249,7 @@ To compute the new, contextual row vector for "data", the system takes:
 
 $$\text{New Vector}_{\text{data}} = (0.15 \times V_{[CLS]}) + (0.45 \times V_{\text{from}}) + (0.35 \times V_{\text{data}}) + (0.02 \times V_{.}) + (0.03 \times V_{[SEP]})$$
 
-> Note: the decimal weights $(0.15, 0.45, 0.35$, etc.) are not hardcoded — they are calculated dynamically on the fly based on the specific words in the sentence.
+> Note: the decimal weights $(0.15, 0.45, 0.35$, etc.) are not hardcoded: they are calculated dynamically on the fly based on the specific words in the sentence.
 
 *The resulting vector is no longer just a generic lookup representation of the word "data". It is now a context-rich vector that actively reflects its structural relationship to the phrase "from data."*
 
@@ -253,11 +285,11 @@ For example, in a 6-layer transformer, the output of the first layer becomes the
 
 ### 8. Pooling: Condensing the Matrix
 
-Right now, the model is holding 5 vectors (one for each token: [CLS], from, data, ., [SEP]), and each vector is 384 numbers long. We need to collapse these 5 rows into 1 single row — since we want a single vector to represent the entire sentence for retrieval.
+Right now, the model is holding 5 vectors (one for each token: [CLS], from, data, ., [SEP]), and each vector is 384 numbers long. We need to collapse these 5 rows into 1 single row: since we want a single vector to represent the entire sentence for retrieval.
 
 For our specific model, it uses **Mean Pooling**, which simply averages the 5 vectors together. For example:
 
-#### 8.1 — Taking the averages
+#### 8.1: Taking the averages
 
 $$\begin{array}{c|cccc}
 \text{[Token]} & \text{Col 1 (Context)} & \text{Col 2 (Tense)} & \text{Col 3 (Syntax)} & \cdots & \text{Col 384} \\
@@ -272,7 +304,7 @@ data   &  0.90 &  0.03 &  0.40 & \cdots &  0.34 \\
 \hline
 \end{array}$$
 
-#### 8.2 — Normalizing
+#### 8.2: Normalizing
 
 Remember we passed `normalize_embeddings=True` when we created the embedding model. This triggers a final geometric calibration called **L2 (Euclidean) Normalization**:
 
@@ -296,7 +328,7 @@ $$\text{embed\_chunks} = \begin{bmatrix} 0.0512, & 0.0120, & 0.0928, & \dots, & 
 
 ---
 
-As mentioned earlier, this normalization is what makes Cosine Similarity so clean — because:
+As mentioned earlier, this normalization is what makes Cosine Similarity so clean because:
 
 $$\text{cosine similarity} = \frac{A \cdot B}{\|A\| \|B\|}$$
 
