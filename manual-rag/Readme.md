@@ -5,7 +5,7 @@
 
 ### 1. Tokenization
 
-eg: `"from data"` → `[2, 2013, 2951, 1012, 3]` ~ *[CLS, from, data, ., SEP]*
+eg: `"from data."` → `[2, 2013, 2951, 1012, 3]` ~ *[CLS, from, data, ., SEP]*
 
 ---
 
