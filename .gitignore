@@ -2,6 +2,8 @@
 *.npy
 *.npz
 *.html
+*.pyc
+__pycache__/
 .venv/
 .env
 
